@@ -1,38 +1,91 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useGrid } from "../useState";
 
-export function Grid() {
-  const gridItems = [
-    [0, 1, 2, 3, 4, 5, 6, 7],
-    [8, 9, 10, 11, 12, 13, 14, 15],
-    [16, 17, 18, 19, 20, 21, 22, 23],
-    [24, 25, 26, 27, 28, 29, 30, 31],
-    [32, 33, 34, 35, 36, 37, 38, 39],
-    [40, 41, 42, 43, 44, 45, 46, 47],
-    [48, 49, 50, 51, 52, 53, 54, 55],
-    [56, 57, 58, 59, 60, 61, 62, 63],
-  ];
-  console.log(gridItems);
+function range(n) {
+  return [...Array(n).keys()];
+}
+
+function getGrid(grid, x, y) {
+  const key = `${x},${y}`;
+  return grid[key];
+}
+
+export function Grid({ editMode, onClick }) {
+  const [grid, getGridElement, setGridElement] = useGrid();
+  const clsHover = editMode && "hover:border-blue-500";
   return (
-    <>
-      <div>wehs</div>
-      <table>
-        {gridItems.map((row) => (
-          <tbody>
-            <tr>
-              {row.map((item) => (
-                <td className="p-3">
-                  {" "}
-                  <GridItem data={item} />
-                </td>
-              ))}
-            </tr>
-          </tbody>
+    <table className="bg-image m-auto">
+      <tbody>
+        {range(8).map((index) => (
+          <tr key={index}>
+            {range(8).map((jndex) => (
+              <td
+                key={`${index} ${jndex}`}
+                className={`p-0 w-36 h-20 ${clsHover}`}
+                onClick={() => onClick(index + 1, jndex + 1)}
+              >
+                <GridItem
+                  isVisible={getGridElement(index + 1, jndex + 1)?.visited}
+                />
+              </td>
+            ))}
+          </tr>
         ))}
-      </table>
-    </>
+      </tbody>
+    </table>
   );
 }
 
-function GridItem({ data }) {
-  return <div>{data}</div>;
+function GridItem({ isVisible }) {
+  const className = "p-3";
+  return isVisible ? (
+    <div className="w-full h-full bg-gray-100 border-black p-3 cursor-default" />
+  ) : (
+    <div className="w-full h-full p-3 border-white border-solid border cursor-pointer" />
+  );
+}
+
+export function MiniForm({ url, media, onSubmit }) {
+  const [urlInput, setUrl] = useState(url);
+  const [mediaType, setMediaType] = useState(media);
+  useEffect(() => {
+    setUrl(url || "");
+    setMediaType(media);
+  }, [url, media]);
+  const handleSave = () => onSubmit({ url: urlInput, mediaType });
+  return (
+    <div className="mx-20 my-5 flex flex-col">
+      <input
+        type="text"
+        placeholder="YouTube video ID or image URL"
+        className="focus:ring-indigo-500 px-3 py-2 focus:border-indigo-500 flex-1 w-full border rounded-md sm:text-sm border-gray-300"
+        value={urlInput}
+        onChange={(event) => setUrl(event.target.value)}
+      />
+      <div className="mt-2">
+        <input
+          type="radio"
+          id="img"
+          name="media"
+          value="img"
+          checked={mediaType === "img"}
+          onClick={() => setMediaType("img")}
+          className="ml-1 mr-2"
+        />
+        <label htmlFor="img" className="mr-5">Image</label>
+        <input
+          type="radio"
+          id="video"
+          name="media"
+          value="video"
+          checked={mediaType === "video"}
+          onClick={() => setMediaType("video")}
+          className="ml-1 mr-2"
+        />
+        <label htmlFor="video">Video</label>
+      </div>
+      <button className="hover:bg-blue-500 mt-5 px-2 py-1 w-64 border border-gray-300 rounded-md" onClick={handleSave}>Save</button>
+      <div className="mt-10"/>
+    </div>
+  );
 }
